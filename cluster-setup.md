@@ -85,6 +85,7 @@ Each node has:
 
    ```bash
    talosctl gen config kubeflow-kubernetes https://<CONTROL_PLANE_IP>:6443 --output-dir _out
+   
    export CONTROL_PLANE_IP=<CONTROL_PLANE_IP>
 
    # Apply control plane config
