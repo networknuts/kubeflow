@@ -84,7 +84,7 @@ Each node has:
 3. **Install Kubernetes using Talos Linux** on booted Talos ISO nodes:
 
    ```bash
-   talosctl gen config kubeflow-kubernetes https://<CONTROL_PLANE_IP>:6443 --output-dir _out
+   talosctl gen config kubeflow-kubernetes https://<CONTROL_PLANE_IP>:6443 --kubernetes-version 1.32.0 --output-dir _out
    
    export CONTROL_PLANE_IP=<CONTROL_PLANE_IP>
 
