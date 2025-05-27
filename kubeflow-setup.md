@@ -28,11 +28,35 @@ This guide describes how to deploy Kubeflow using the official manifests reposit
    done
    ```
 
-3. **Verify Deployment**
+3. **Allow Privileged Pod Security**
 
-   ```bash
-   kubectl get pods -n kubeflow
-   ```
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Find all namespaces with Istio injection enabled
+namespaces=$(kubectl get ns \
+  -l istio-injection=enabled \
+  -o jsonpath='{.items[*].metadata.name}')
+
+if [[ -z "$namespaces" ]]; then
+  echo "No namespaces found with istio-injection=enabled"
+  exit 1
+fi
+
+for ns in $namespaces; do
+  echo "→ Updating PodSecurity on namespace \"$ns\""
+  kubectl label namespace "$ns" \
+    pod-security.kubernetes.io/enforce=privileged \
+    pod-security.kubernetes.io/enforce-version=latest \
+    --overwrite
+
+  echo "→ Restarting all deployments in \"$ns\""
+  kubectl rollout restart deployment -n "$ns" --all
+done
+
+echo "✅ Done."
+```
 
 4. **Next Steps**
 
