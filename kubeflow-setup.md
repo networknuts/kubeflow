@@ -107,13 +107,13 @@ Usage Syntax:
 
 Kubeflow cannot work on HTTP since it requires JSON Web Tokens (JWT) to prevent Cross-Site Request Forgery (CSRF). Due to this nature of Kubeflow, we have to configure HTTPS ingress. Kubeflow uses the primary service of `istio-ingressgateway` in the `istio-system` project.
 
-5.1 Deploy Metal LB to get a Public IP for your Kubeflow service
+   5.1 Deploy Metal LB to get a Public IP for your Kubeflow service
 
    ```bash
    kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.11/config/manifests/metallb-native.yaml
    ```
 
-5.2 Create YAML for Metal LB Address Pool & Layer 2 ARP 
+   5.2 Create YAML for Metal LB Address Pool & Layer 2 ARP 
 
    ```yaml
    apiVersion: metallb.io/v1beta1
@@ -135,7 +135,7 @@ Kubeflow cannot work on HTTP since it requires JSON Web Tokens (JWT) to prevent 
      - default-pool
    ```
 
-5.3 Patch Kubeflow service to get Metal LB external LP
+   5.3 Patch Kubeflow service to get Metal LB external LP
 
    ```bash
    kubectl patch svc istio-ingressgateway \
@@ -145,7 +145,7 @@ Kubeflow cannot work on HTTP since it requires JSON Web Tokens (JWT) to prevent 
    ```
 Wait until `kubectl get svc -n istio-system istio-ingressgateway` shows an EXTERNAL-IP
 
-5.4 Issue a TLS Certificate via Kubeflow Built-in Issuer
+   5.4 Issue a TLS Certificate via Kubeflow Built-in Issuer
 
    ```yaml
    apiVersion: cert-manager.io/v1
@@ -164,7 +164,7 @@ Wait until `kubectl get svc -n istio-system istio-ingressgateway` shows an EXTER
 
    ```
 
-5.5 Enable HTTPS on the Kubeflow Gateway
+   5.5 Enable HTTPS on the Kubeflow Gateway
 
    ```bash
    kubectl edit gateway kubeflow-gateway -n kubeflow
@@ -193,14 +193,22 @@ Wait until `kubectl get svc -n istio-system istio-ingressgateway` shows an EXTER
          - "*"
    ```
 
-5.6 Configure DNS   
+   5.6 Configure DNS   
 
 Point your DNS (e.g. your.kubeflow.domain.com) at the LoadBalancer IP.
 
-4. **Next Steps**
+6. **Troubleshooting Namespaces**
 
-* Configure ingress or port-forwarding to access the Kubeflow dashboard
-* Set up authentication (e.g., Dex, OIDC)
-* Install additional Kubeflow components or customize overlays
+Kubeflow uses istio injected workloads as privileged pods which Kubernetes may not allow unless specified otherwise:
 
-*End of install-kubeflow\.md*
+   ```bash
+   # replace <your-ns> with the namespace (e.g. kubeflow, sample, default…)
+   NS=<your-ns>
+   
+   kubectl label ns $NS \
+     pod-security.kubernetes.io/enforce=privileged \
+     pod-security.kubernetes.io/audit=privileged \
+     pod-security.kubernetes.io/warn=privileged \
+     --overwrite
+
+   ```
