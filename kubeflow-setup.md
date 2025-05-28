@@ -58,6 +58,51 @@ done
 echo "✅ Done."
 ```
 
+4. **Fix Image Pull Issues**
+
+   Since the container images used here are being downloaded from Docker Hub, you can run into Pull Rate limit errors, use the below script to apply an imagePullSecret on all the deployments of any project:
+
+```bash
+#!/usr/bin/env bash
+set -eo pipefail
+
+if [[ $# -ne 2 ]]; then
+  echo "Usage: $0 <namespace> <imagePullSecret>"
+  exit 1
+fi
+
+NS="$1"
+SECRET="$2"
+
+echo "⏳ Patching every Deployment in namespace '$NS' to add imagePullSecret '$SECRET'..."
+
+# Fetch deployment names, one per line
+kubectl get deployments -n "$NS" -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' \
+| while read -r DEP; do
+    echo "→ Patching Deployment/$DEP"
+    kubectl patch deployment "$DEP" -n "$NS" --type=merge --patch "
+{
+  \"spec\": {
+    \"template\": {
+      \"spec\": {
+        \"imagePullSecrets\": [
+          { \"name\": \"$SECRET\" }
+        ]
+      }
+    }
+  }
+}"
+done
+
+echo "✅ Done."
+```
+
+Usage Syntax:
+
+```bash
+./patch-all-pullsecrets.sh <namespace> <imagePullSecret>
+```
+
 4. **Next Steps**
 
 * Configure ingress or port-forwarding to access the Kubeflow dashboard
