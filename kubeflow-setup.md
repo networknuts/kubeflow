@@ -103,6 +103,100 @@ Usage Syntax:
 ./patch-all-pullsecrets.sh <namespace> <imagePullSecret>
 ```
 
+5. **Setup Ingress for Kubeflow**
+
+Kubeflow cannot work on HTTP since it requires JSON Web Tokens (JWT) to prevent Cross-Site Request Forgery (CSRF). Due to this nature of Kubeflow, we have to configure HTTPS ingress. Kubeflow uses the primary service of `istio-ingressgateway` in the `istio-system` project.
+
+5.1 Deploy Metal LB to get a Public IP for your Kubeflow service
+
+   ```bash
+   kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.11/config/manifests/metallb-native.yaml
+   ```
+
+5.2 Create YAML for Metal LB Address Pool & Layer 2 ARP 
+
+   ```yaml
+   apiVersion: metallb.io/v1beta1
+   kind: IPAddressPool
+   metadata:
+      name: default-pool
+      namespace: metallb-system
+   spec:
+     addresses:
+     - 192.168.1.91-192.168.1.92
+   ---
+   apiVersion: metallb.io/v1beta1
+   kind: L2Advertisement
+   metadata:
+     name: default-l2
+     namespace: metallb-system
+   spec:
+     ipAddressPools:
+     - default-pool
+   ```
+
+5.3 Patch Kubeflow service to get Metal LB external LP
+
+   ```bash
+   kubectl patch svc istio-ingressgateway \
+     -n istio-system \
+     --type merge \
+     -p '{"spec":{"type":"LoadBalancer"}}'
+   ```
+Wait until `kubectl get svc -n istio-system istio-ingressgateway` shows an EXTERNAL-IP
+
+5.4 Issue a TLS Certificate via Kubeflow Built-in Issuer
+
+   ```yaml
+   apiVersion: cert-manager.io/v1
+   kind: Certificate
+   metadata:
+     name: kubeflow-ingressgateway-tls
+     namespace: istio-system
+   spec:
+     secretName: kubeflow-ingressgateway-certs
+     dnsNames:
+       - your.kubeflow.domain.com      # ← replace with your host
+     issuerRef:
+       name: kubeflow-issuer
+       kind: Issuer
+       group: cert-manager.io
+
+   ```
+
+5.5 Enable HTTPS on the Kubeflow Gateway
+
+   ```bash
+   kubectl edit gateway kubeflow-gateway -n kubeflow
+   ```
+   Under `specs.servers`, modify the following:
+   ```yaml
+     # HTTP → HTTPS redirect
+     - port:
+         number: 80
+         name: http
+         protocol: HTTP
+       tls:
+         httpsRedirect: true
+       hosts:
+         - "*"
+   
+     # HTTPS listener
+     - port:
+         number: 443
+         name: https
+         protocol: HTTPS
+       tls:
+         mode: SIMPLE
+         credentialName: kubeflow-ingressgateway-certs
+       hosts:
+         - "*"
+   ```
+
+5.6 Configure DNS   
+
+Point your DNS (e.g. your.kubeflow.domain.com) at the LoadBalancer IP.
+
 4. **Next Steps**
 
 * Configure ingress or port-forwarding to access the Kubeflow dashboard
