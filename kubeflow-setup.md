@@ -52,7 +52,7 @@ for ns in $namespaces; do
     --overwrite
 
   echo "→ Restarting all deployments in \"$ns\""
-  kubectl rollout restart deployment -n "$ns" --all
+  kubectl rollout restart deployment -n "$ns" 
 done
 
 echo "✅ Done."
