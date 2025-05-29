@@ -50,7 +50,6 @@ The Kubeflow GUI doesn’t let you supply a pull secret directly when creating n
 3. **In the Notebook, run the following python code**:
 
    ```python
-   import os
    from minio import Minio
 
    client = Minio(
@@ -63,5 +62,39 @@ The Kubeflow GUI doesn’t let you supply a pull secret directly when creating n
    print(client.list_buckets())
 
    ```
+  ## Using Environment Variables in Jupyter Notebooks
+
+1. Creating a namespace-scoped PodDefault 
+  ```yaml
+   apiVersion: kubeflow.org/v1alpha1
+   kind: PodDefault
+   metadata:
+     name: team1-env
+     namespace: kubeflow-user-example-com
+   spec:
+     desc: Inject Team 1’s environment variables
+     selector:
+       matchLabels:
+         pod-default-team1: "enabled"
+     env:
+       - name: MINIO_ACCESS_KEY
+         value: "minio"
+       - name: MINIO_SECRET_KEY
+         value: "minio123"
+  ```
+2. Testing the environment variables
+   ```python
+   import os
+   from minio import Minio
    
+   client = Minio(
+       "minio.kubeflow.svc.cluster.local:9000",
+       access_key=os.environ["MINIO_ACCESS_KEY"],
+       secret_key=os.environ["MINIO_SECRET_KEY"],
+       secure=False
+   )
+   
+   print(client.list_buckets())
+
+   ```
 
