@@ -35,10 +35,10 @@ The Kubeflow GUI doesn’t let you supply a pull secret directly when creating n
 
 1. **Deploy the Notebook using the Kubeflow GUI**:
 
-   Image: kubeflownotebookswg/jupyter-scipy:latest
-   Minimum CPU: 0.5
-   Minimum Memory: 0.5 Gi
-   Volumes: Optional
+| Image                                    | Minimum CPU | Minimum Memory | Volumes  |
+|------------------------------------------|-------------|----------------|----------|
+| `kubeflownotebookswg/jupyter-scipy:latest` | 0.5         | 0.5 Gi         | Optional |
+
 
 2. **Install minio dependencies**
 
