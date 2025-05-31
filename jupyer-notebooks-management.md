@@ -2,7 +2,7 @@
 
 ## Launching Jupyter Notebooks
 
-You can launch Jupyter notebooks directly from the Kubeflow GUI by navigating to **Notebook Servers** and creating a new NotebookServer. You’ll need to provide a notebook image URL. Kubeflow includes some sample container images out‑of‑the‑box, but in most cases you’ll use private or custom images and may encounter errors related to `imagePullSecrets`.
+You can launch Jupyter notebooks directly from the Kubeflow GUI by navigating to **Notebook Servers** and creating a new NotebookServer. You’ll need to provide a notebook image URL. Kubeflow includes some sample container images out‑of‑the‑box, but in most cases, you’ll use private or custom images and may encounter errors related to `imagePullSecrets`.
 
 ## Attaching imagePullSecret to ServiceAccount
 
@@ -47,7 +47,7 @@ The Kubeflow GUI doesn’t let you supply a pull secret directly when creating n
     pip3 install minio
     ```
 
-3. **In the Notebook, run the following python code**:
+3. **In the Notebook, run the following Python code**:
 
    ```python
    from minio import Minio
@@ -75,7 +75,7 @@ The Kubeflow GUI doesn’t let you supply a pull secret directly when creating n
      desc: Inject Team 1’s environment variables
      selector:
        matchLabels:
-         pod-default-team1: "enabled"
+         pod-default-team1: "true"
      env:
        - name: MINIO_ACCESS_KEY
          value: "minio"
