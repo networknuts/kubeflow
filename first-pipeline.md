@@ -65,7 +65,7 @@ def eval_op(
 
 @pipeline(
     name='fashion-mnist-3step',
-    pipeline_root='gs://<your-bucket>/pipeline_root'
+    pipeline_root='s3://mlpipeline/pipeline_root'
 )
 def fashion_mnist_pipeline(
     dataset_uri: str,
