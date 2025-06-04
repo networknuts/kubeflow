@@ -125,12 +125,15 @@ Each node has:
 
    ```bash
    helm repo add nfs-subdir-external-provisioner \
-     https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
-   helm repo update
+    https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner
+    helm repo update
+
    helm install nfs-provisioner \
-     nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
-     --set nfs.server=<workstation-ip> \
-     --set nfs.path=/mnt/nfs-storage
+    nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
+    --set nfs.server=<workstation-ip> \
+    --set nfs.path=/mnt/nfs-storage \
+    --set storageClass.defaultClass=true
+
    ```
 
 *End of README.md*
