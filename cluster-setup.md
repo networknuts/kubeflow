@@ -29,7 +29,7 @@ graph LR
 * **vCPU:** 1
 * **Memory:** 2 GB
 * **Storage:** 50 GB (NFS server)
-* **Tools:** kubectl, helm, customize
+* **Tools:** kubectl, helm, customize, talosctl
 
 ### Kubernetes Cluster Nodes (×3)
 
