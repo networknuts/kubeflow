@@ -1,0 +1,9 @@
+FROM python:3.11
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /train
+COPY ./requirements.txt /train
+RUN --mount=type=cache,target=/root/.cache python -m pip install -r requirements.txt
+COPY . /train/
