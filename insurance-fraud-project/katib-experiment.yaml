@@ -1,0 +1,122 @@
+apiVersion: kubeflow.org/v1beta1
+kind: Experiment
+metadata:
+  name: insurance-fraud-tuning
+  namespace: kubeflow-user-example-com
+spec:
+  # 1) Objective is required!
+  objective:
+    type: maximize
+    goal: 0.90
+    objectiveMetricName: accuracy
+
+  # 2) Search algorithm & hyperparameters
+  algorithm:
+    algorithmName: random
+  parameters:
+    - name: --n_estimators
+      parameterType: int
+      feasibleSpace:
+        min: "50"
+        max: "500"
+    - name: --max_depth
+      parameterType: int
+      feasibleSpace:
+        min: "0"
+        max: "30"
+
+  # 3) Parallelism controls
+  parallelTrialCount: 3
+  maxTrialCount: 12
+  maxFailedTrialCount: 3
+
+  # 4) The full trial template
+  trialTemplate:
+    primaryContainerName: training-container
+    trialParameters:
+      - name: --n_estimators
+        description: "Number of trees"
+        reference: --n_estimators
+      - name: --max_depth
+        description: "Max tree depth (0=None)"
+        reference: --max_depth
+    trialSpec:
+      apiVersion: batch/v1
+      kind: Job
+      spec:
+        template:
+          metadata:
+            annotations:
+              sidecar.istio.io/inject: "false"
+          spec:
+            initContainers:
+              - name: fetch-artifacts
+                image: amazon/aws-cli:latest
+                command:
+                  - sh
+                  - -c
+                  - |
+                    aws s3 cp \
+                      s3://mlpipeline/insurance/insurance_fraud_cleaned.csv \
+                      /mnt/data/insurance_fraud_cleaned.csv \
+                      --endpoint-url http://minio-service.kubeflow:9000 \
+                      --region us-east-1 && \
+                    aws s3 cp \
+                      s3://mlpipeline/insurance/preprocessor.joblib \
+                      /mnt/data/preprocessor.joblib \
+                      --endpoint-url http://minio-service.kubeflow:9000 \
+                      --region us-east-1
+                env:
+                  - name: AWS_ACCESS_KEY_ID
+                    valueFrom:
+                      secretKeyRef:
+                        name: mlpipeline-minio-artifact
+                        key: accesskey
+                  - name: AWS_SECRET_ACCESS_KEY
+                    valueFrom:
+                      secretKeyRef:
+                        name: mlpipeline-minio-artifact
+                        key: secretkey
+                  - name: AWS_S3_FORCE_PATH_STYLE
+                    value: "true"
+                  - name: AWS_REGION
+                    value: "us-east-1"
+                volumeMounts:
+                  - name: workdir
+                    mountPath: /mnt/data
+
+            containers:
+              - name: training-container
+                image: quay.io/asrivastava98/insurance-train:3.0
+                command:
+                  - python3
+                  - train.py
+                args:
+                  - "--clean_csv=/mnt/data/insurance_fraud_cleaned.csv"
+                  - "--prep_joblib=/mnt/data/preprocessor.joblib"
+                  - "--model_output=/mnt/data/fraud_pipeline_tuned.joblib"
+                  - "--n_estimators=${trialParameters.--n_estimators}"
+                  - "--max_depth=${trialParameters.--max_depth}"
+                env:
+                  - name: AWS_ACCESS_KEY_ID
+                    valueFrom:
+                      secretKeyRef:
+                        name: mlpipeline-minio-artifact
+                        key: accesskey
+                  - name: AWS_SECRET_ACCESS_KEY
+                    valueFrom:
+                      secretKeyRef:
+                        name: mlpipeline-minio-artifact
+                        key: secretkey
+                  - name: AWS_S3_FORCE_PATH_STYLE
+                    value: "true"
+                  - name: AWS_REGION
+                    value: "us-east-1"
+                volumeMounts:
+                  - name: workdir
+                    mountPath: /mnt/data
+
+            volumes:
+              - name: workdir
+                emptyDir: {}
+            restartPolicy: Never
