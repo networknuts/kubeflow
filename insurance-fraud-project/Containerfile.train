@@ -1,0 +1,10 @@
+# Dockerfile.train
+FROM quay.io/jupyter/scipy-notebook:lab-4.4.3
+
+WORKDIR /app
+COPY train.py .
+
+# Install only extras your script needs:
+RUN pip install --no-cache-dir minio
+
+ENTRYPOINT ["python3", "train.py"]
