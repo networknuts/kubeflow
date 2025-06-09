@@ -1,0 +1,20 @@
+# Dockerfile.server
+FROM quay.io/jupyter/scipy-notebook:lab-4.4.3
+
+USER root
+WORKDIR /app
+
+# Copy in your pickled model
+COPY fraud_pipeline_final.joblib /app/fraud_pipeline_final.joblib
+
+# Copy the FastAPI server code
+COPY server.py          /app/server.py
+
+# Install only the extras your server needs
+RUN pip install --no-cache-dir fastapi uvicorn
+
+# Expose the serving port and switch back to jovyan
+EXPOSE 8080
+USER jovyan
+
+ENTRYPOINT ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8080"]
