@@ -1,0 +1,21 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: insurance-fraud-custom
+  namespace: kubeflow-user-example-com
+spec:
+  predictor:
+    # We’re providing our own container, not using the built-in sklearn predictor
+    containers:
+      - name: kserve-container
+        image: quay.io/asrivastava98/insurance-fraud-serve:3.0
+        ports:
+          - name: http1
+            containerPort: 8080
+        resources:
+          requests:
+            cpu: "200m"
+            memory: "512Mi"
+          limits:
+            cpu: "1"
+            memory: "1Gi"
