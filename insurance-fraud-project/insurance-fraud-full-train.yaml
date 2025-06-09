@@ -1,0 +1,89 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: insurance-fraud-final-training
+  namespace: kubeflow-user-example-com
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      initContainers:
+        - name: fetch-resources
+          image: amazon/aws-cli:latest
+          command:
+            - sh
+            - -c
+            - |
+              aws s3 cp \
+                s3://mlpipeline/insurance/insurance_fraud_cleaned.csv \
+                /mnt/data/insurance_fraud_cleaned.csv \
+                --endpoint-url http://minio-service.kubeflow:9000 \
+                --region us-east-1 && \
+              aws s3 cp \
+                s3://mlpipeline/insurance/preprocessor.joblib \
+                /mnt/data/preprocessor.joblib \
+                --endpoint-url http://minio-service.kubeflow:9000 \
+                --region us-east-1
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: mlpipeline-minio-artifact
+                  key: accesskey
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mlpipeline-minio-artifact
+                  key: secretkey
+            - name: AWS_S3_FORCE_PATH_STYLE
+              value: "true"
+            - name: AWS_REGION
+              value: "us-east-1"
+          volumeMounts:
+            - name: workdir
+              mountPath: /mnt/data
+
+      containers:
+        - name: trainer
+          image: quay.io/asrivastava98/insurance-train:4.0
+          command:
+            - sh
+            - -c
+            - |
+              # 1) train
+              python3 train.py \
+                --clean_csv=/mnt/data/insurance_fraud_cleaned.csv \
+                --prep_joblib=/mnt/data/preprocessor.joblib \
+                --model_output=/mnt/data/fraud_pipeline_final.joblib \
+                --n_estimators=106 \ #best value
+                --max_depth=25 && \ #best value
+              # 2) configure mc alias
+              mc alias set minio http://minio-service.kubeflow:9000 \
+                "${AWS_ACCESS_KEY_ID}" "${AWS_SECRET_ACCESS_KEY}" && \
+              # 3) copy the final model
+              mc cp /mnt/data/fraud_pipeline_final.joblib \
+                minio/mlpipeline/insurance/fraud_pipeline_final.joblib
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: mlpipeline-minio-artifact
+                  key: accesskey
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: mlpipeline-minio-artifact
+                  key: secretkey
+            - name: AWS_S3_FORCE_PATH_STYLE
+              value: "true"
+            - name: AWS_REGION
+              value: "us-east-1"
+          volumeMounts:
+            - name: workdir
+              mountPath: /mnt/data
+
+      volumes:
+        - name: workdir
+          emptyDir: {}
+
+      restartPolicy: Never
