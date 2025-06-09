@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: insurance-fraud-ui
+  namespace: kubeflow-user-example-com
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: insurance-fraud-ui
+  template:
+    metadata:
+      labels:
+        app: insurance-fraud-ui
+    spec:
+      containers:
+        - name: insurance-fraud-ui
+          image: quay.io/asrivastava98/insurance-fraud-app:1.0
+          ports:
+            - containerPort: 8501
+          env:
+            - name: PREDICTOR_URL
+              value: "http://insurance-fraud-custom-predictor-00001-private.kubeflow-user-example-com.svc.cluster.local:80/v1/models/insurance-fraud-custom:predict"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: insurance-fraud-ui
+  namespace: kubeflow-user-example-com
+spec:
+  type: ClusterIP
+  selector:
+    app: insurance-fraud-ui
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8501
+---
