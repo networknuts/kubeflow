@@ -212,3 +212,56 @@ Kubeflow uses istio injected workloads as privileged pods which Kubernetes may n
      --overwrite
 
    ```
+
+### Kubeflow Deployment Purpose Table
+
+| Deployment | Purpose |
+|------------|---------|
+| `dex` | OIDC identity provider used for authentication (e.g., GitHub, LDAP, Google). |
+| `oauth2-proxy` | Acts as a reverse proxy, handling OAuth2-based login and token exchange for web UIs. |
+| `cert-manager` | Manages TLS certificates (e.g., from Let's Encrypt) for secure ingress. |
+| `cert-manager-cainjector` | Injects CA data into webhook configurations automatically. |
+| `cert-manager-webhook` | Handles dynamic admission control for cert-manager resources. |
+| `nfs-provisioner-nfs-subdir-external-provisioner` | Dynamic NFS-based storage provisioning using sub-directories. |
+| `minio` | S3-compatible object store used to store pipeline artifacts, models, etc. |
+| `mysql` | Relational DB backend used by Katib for experiment metadata. |
+| `cluster-local-gateway` | Istio gateway for internal-only traffic between services. |
+| `istio-ingressgateway` | External-facing Istio gateway handling ingress traffic. |
+| `istiod` | Istio control plane: manages sidecars, traffic rules, certificates. |
+| `net-istio-controller` | Integrates Knative networking with Istio for traffic routing. |
+| `net-istio-webhook` | Admission webhook for validating Istio networking resources. |
+| `coredns` | Internal DNS server for Kubernetes service discovery. |
+| `centraldashboard` | The main UI for accessing Kubeflow features. |
+| `jupyter-web-app-deployment` | UI for managing and spawning Jupyter notebooks. |
+| `notebook-controller-deployment` | Controller for managing notebook CRDs (spawns pods). |
+| `profiles-deployment` | Manages user profiles, namespaces, and isolation. |
+| `kubeflow-pipelines-profile-controller` | Ties pipelines with user profiles and RBAC. |
+| `pvcviewer-controller-manager` | Renders UI to view contents of PVCs in the dashboard. |
+| `volumes-web-app-deployment` | Web UI to manage PVCs in the user's namespace. |
+| `ml-pipeline` | Orchestrates pipeline execution and lifecycle. |
+| `ml-pipeline-ui` | Web UI to browse and run ML pipelines. |
+| `ml-pipeline-ui-artifact` | UI to view pipeline artifacts. |
+| `ml-pipeline-viewer-crd` | Manages CRD for artifact viewer and rendering logic. |
+| `ml-pipeline-visualizationserver` | Renders charts/visuals of metrics during pipeline run. |
+| `ml-pipeline-persistenceagent` | Persists pipeline runs and metadata to DB. |
+| `ml-pipeline-scheduledworkflow` | Handles scheduled/cron-based pipeline runs. |
+| `cache-server` | Caches pipeline steps to avoid redundant executions. |
+| `workflow-controller` | Argo controller that runs workflows in Kubernetes. |
+| `metadata-grpc-deployment` | gRPC API server for metadata tracking. |
+| `metadata-envoy-deployment` | Sidecar proxy for metadata API. |
+| `metadata-writer` | Writes pipeline metadata for lineage tracking. |
+| `katib-controller` | Manages experiment lifecycle. |
+| `katib-db-manager` | Seeds Katib DB schema and manages connections. |
+| `katib-mysql` | MySQL database to store experiments and trials. |
+| `katib-ui` | Web UI to launch and view Katib experiments. |
+| `kserve-controller-manager` | Main controller for managing InferenceService CRDs. |
+| `kserve-localmodel-controller-manager` | For serving models from local storage. |
+| `kserve-models-web-app` | Web UI to manage deployed models. |
+| `tensorboard-controller-deployment` | Manages tensorboard instances tied to experiments. |
+| `tensorboards-web-app-deployment` | UI for launching and browsing tensorboards. |
+| `training-operator` | Custom controller for training jobs (TFJob, PyTorchJob, etc.). |
+| `activator` | Buffers requests for scale-to-zero services until pods are ready. |
+| `autoscaler` | Monitors traffic and scales Knative services up/down. |
+| `controller` (Knative) | Reconciles Knative Serving CRDs like Revision, Service. |
+| `webhook` (Knative) | Validates and mutates Knative resources at creation. |
+| `admission-webhook-deployment` | Validates resources like notebooks before they're created. |
