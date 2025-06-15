@@ -213,55 +213,61 @@ Kubeflow uses istio injected workloads as privileged pods which Kubernetes may n
 
    ```
 
-### Kubeflow Deployment Purpose Table
+## Optional Information
 
-| Deployment | Purpose |
-|------------|---------|
-| `dex` | OIDC identity provider used for authentication (e.g., GitHub, LDAP, Google). |
-| `oauth2-proxy` | Acts as a reverse proxy, handling OAuth2-based login and token exchange for web UIs. |
-| `cert-manager` | Manages TLS certificates (e.g., from Let's Encrypt) for secure ingress. |
-| `cert-manager-cainjector` | Injects CA data into webhook configurations automatically. |
-| `cert-manager-webhook` | Handles dynamic admission control for cert-manager resources. |
-| `nfs-provisioner-nfs-subdir-external-provisioner` | Dynamic NFS-based storage provisioning using sub-directories. |
-| `minio` | S3-compatible object store used to store pipeline artifacts, models, etc. |
-| `mysql` | Relational DB backend used by Katib for experiment metadata. |
-| `cluster-local-gateway` | Istio gateway for internal-only traffic between services. |
-| `istio-ingressgateway` | External-facing Istio gateway handling ingress traffic. |
-| `istiod` | Istio control plane: manages sidecars, traffic rules, certificates. |
-| `net-istio-controller` | Integrates Knative networking with Istio for traffic routing. |
-| `net-istio-webhook` | Admission webhook for validating Istio networking resources. |
-| `coredns` | Internal DNS server for Kubernetes service discovery. |
-| `centraldashboard` | The main UI for accessing Kubeflow features. |
-| `jupyter-web-app-deployment` | UI for managing and spawning Jupyter notebooks. |
-| `notebook-controller-deployment` | Controller for managing notebook CRDs (spawns pods). |
-| `profiles-deployment` | Manages user profiles, namespaces, and isolation. |
-| `kubeflow-pipelines-profile-controller` | Ties pipelines with user profiles and RBAC. |
-| `pvcviewer-controller-manager` | Renders UI to view contents of PVCs in the dashboard. |
-| `volumes-web-app-deployment` | Web UI to manage PVCs in the user's namespace. |
-| `ml-pipeline` | Orchestrates pipeline execution and lifecycle. |
-| `ml-pipeline-ui` | Web UI to browse and run ML pipelines. |
-| `ml-pipeline-ui-artifact` | UI to view pipeline artifacts. |
-| `ml-pipeline-viewer-crd` | Manages CRD for artifact viewer and rendering logic. |
-| `ml-pipeline-visualizationserver` | Renders charts/visuals of metrics during pipeline run. |
-| `ml-pipeline-persistenceagent` | Persists pipeline runs and metadata to DB. |
-| `ml-pipeline-scheduledworkflow` | Handles scheduled/cron-based pipeline runs. |
-| `cache-server` | Caches pipeline steps to avoid redundant executions. |
-| `workflow-controller` | Argo controller that runs workflows in Kubernetes. |
-| `metadata-grpc-deployment` | gRPC API server for metadata tracking. |
-| `metadata-envoy-deployment` | Sidecar proxy for metadata API. |
-| `metadata-writer` | Writes pipeline metadata for lineage tracking. |
-| `katib-controller` | Manages experiment lifecycle. |
-| `katib-db-manager` | Seeds Katib DB schema and manages connections. |
-| `katib-mysql` | MySQL database to store experiments and trials. |
-| `katib-ui` | Web UI to launch and view Katib experiments. |
-| `kserve-controller-manager` | Main controller for managing InferenceService CRDs. |
-| `kserve-localmodel-controller-manager` | For serving models from local storage. |
-| `kserve-models-web-app` | Web UI to manage deployed models. |
-| `tensorboard-controller-deployment` | Manages tensorboard instances tied to experiments. |
-| `tensorboards-web-app-deployment` | UI for launching and browsing tensorboards. |
-| `training-operator` | Custom controller for training jobs (TFJob, PyTorchJob, etc.). |
-| `activator` | Buffers requests for scale-to-zero services until pods are ready. |
-| `autoscaler` | Monitors traffic and scales Knative services up/down. |
-| `controller` (Knative) | Reconciles Knative Serving CRDs like Revision, Service. |
-| `webhook` (Knative) | Validates and mutates Knative resources at creation. |
-| `admission-webhook-deployment` | Validates resources like notebooks before they're created. |
+### Kubeflow Cluster Deployments – With Namespaces and Purpose
+
+| Namespace | Deployment | Purpose |
+|-----------|------------|---------|
+| auth | `dex` | OIDC identity provider used for authentication (e.g., GitHub, LDAP, Google). |
+| oauth2-proxy | `oauth2-proxy` | Acts as a reverse proxy, handling OAuth2-based login and token exchange for web UIs. |
+| cert-manager | `cert-manager` | Manages TLS certificates (e.g., from Let's Encrypt) for secure ingress. |
+| cert-manager | `cert-manager-cainjector` | Injects CA data into webhook configurations automatically. |
+| cert-manager | `cert-manager-webhook` | Handles dynamic admission control for cert-manager resources. |
+| default | `nfs-provisioner-nfs-subdir-external-provisioner` | Dynamic NFS-based storage provisioning using sub-directories. |
+| istio-system | `cluster-local-gateway` | Istio gateway for internal-only traffic between services. |
+| istio-system | `istio-ingressgateway` | External-facing Istio gateway handling ingress traffic. |
+| istio-system | `istiod` | Istio control plane: manages sidecars, traffic rules, certificates. |
+| knative-serving | `activator` | Buffers requests for scale-to-zero services until pods are ready. |
+| knative-serving | `autoscaler` | Monitors traffic and scales Knative services up/down. |
+| knative-serving | `controller` | Reconciles Knative Serving CRDs like Revision, Service. |
+| knative-serving | `net-istio-controller` | Integrates Knative networking with Istio for traffic routing. |
+| knative-serving | `net-istio-webhook` | Admission webhook for validating Istio networking resources. |
+| knative-serving | `webhook` | Validates and mutates Knative resources at creation. |
+| kube-system | `coredns` | Internal DNS server for Kubernetes service discovery. |
+| kubeflow-user-example-com | `ml-pipeline-ui-artifact` | UI to view pipeline artifacts. |
+| kubeflow-user-example-com | `ml-pipeline-visualizationserver` | Renders charts/visuals of metrics during pipeline run. |
+| kubeflow | `admission-webhook-deployment` | Validates resources like notebooks before they're created. |
+| kubeflow | `cache-server` | Caches pipeline steps to avoid redundant executions. |
+| kubeflow | `centraldashboard` | The main UI for accessing Kubeflow features. |
+| kubeflow | `jupyter-web-app-deployment` | UI for managing and spawning Jupyter notebooks. |
+| kubeflow | `katib-controller` | Manages experiment lifecycle. |
+| kubeflow | `katib-db-manager` | Seeds Katib DB schema and manages connections. |
+| kubeflow | `katib-mysql` | MySQL database to store experiments and trials. |
+| kubeflow | `katib-ui` | Web UI to launch and view Katib experiments. |
+| kubeflow | `kserve-controller-manager` | Main controller for managing InferenceService CRDs. |
+| kubeflow | `kserve-localmodel-controller-manager` | For serving models from local storage. |
+| kubeflow | `kserve-models-web-app` | Web UI to manage deployed models. |
+| kubeflow | `kubeflow-pipelines-profile-controller` | Ties pipelines with user profiles and RBAC. |
+| kubeflow | `metadata-envoy-deployment` | Sidecar proxy for metadata API. |
+| kubeflow | `metadata-grpc-deployment` | gRPC API server for metadata tracking. |
+| kubeflow | `metadata-writer` | Writes pipeline metadata for lineage tracking. |
+| kubeflow | `minio` | S3-compatible object store used to store pipeline artifacts, models, etc. |
+| kubeflow | `ml-pipeline` | Orchestrates pipeline execution and lifecycle. |
+| kubeflow | `ml-pipeline-persistenceagent` | Persists pipeline runs and metadata to DB. |
+| kubeflow | `ml-pipeline-scheduledworkflow` | Handles scheduled/cron-based pipeline runs. |
+| kubeflow | `ml-pipeline-ui` | Web UI to browse and run ML pipelines. |
+| kubeflow | `ml-pipeline-viewer-crd` | Manages CRD for artifact viewer and rendering logic. |
+| kubeflow | `ml-pipeline-visualizationserver` | Renders charts/visuals of metrics during pipeline run. |
+| kubeflow | `mysql` | Relational DB backend used by Katib for experiment metadata. |
+| kubeflow | `notebook-controller-deployment` | Controller for managing notebook CRDs (spawns pods). |
+| kubeflow | `profiles-deployment` | Manages user profiles, namespaces, and isolation. |
+| kubeflow | `pvcviewer-controller-manager` | Renders UI to view contents of PVCs in the dashboard. |
+| kubeflow | `spark-operator-controller` | Manages Spark applications and jobs on K8s. |
+| kubeflow | `spark-operator-webhook` | Validates Spark job submissions. |
+| kubeflow | `tensorboard-controller-deployment` | Manages tensorboard instances tied to experiments. |
+| kubeflow | `tensorboards-web-app-deployment` | UI for launching and browsing tensorboards. |
+| kubeflow | `training-operator` | Custom controller for training jobs (TFJob, PyTorchJob, etc.). |
+| kubeflow | `volumes-web-app-deployment` | Web UI to manage PVCs in the user's namespace. |
+| kubeflow | `workflow-controller` | Argo controller that runs workflows in Kubernetes. |
+| metallb-system | `controller` | Manages allocation of external IPs for services using MetalLB. |
