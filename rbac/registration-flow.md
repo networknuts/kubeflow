@@ -14,8 +14,8 @@ The `CD_REGISTRATION_FLOW` environment variable is part of the `centraldashboard
 
 | Value           | Description                                                                 |
 |----------------|-----------------------------------------------------------------------------|
-| `true` (default) | Shows a **registration page** to the user to input username and namespace. |
-| `false`         | **Skips the registration page** and directly uses the authenticated identity (e.g., email) to auto-provision profile and namespace. |
+| `true`  | Shows a **registration page** to the user to input username and namespace. |
+| `false`(default) | **Skips the registration page** and directly uses the authenticated identity (e.g., email) to auto-provision profile and namespace. |
 
 ---
 
