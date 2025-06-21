@@ -19,6 +19,27 @@ Provide `aryan@networknuts.net` with **admin-level access** to the Kubeflow name
 
 ## ✅ Step 1: Create RoleBinding with Admin Role
 
+RoleBinding structure for Kubeflow:
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: user-<SAFE_USER_EMAIL>-clusterrole-<USER_ROLE>
+  namespace: <PROFILE_NAME>
+  annotations:
+    role: <USER_ROLE>
+    user: <RAW_USER_EMAIL>
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kubeflow-<USER_ROLE>
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: <RAW_USER_EMAIL>
+```
+
 Apply the following Kubernetes `RoleBinding` manifest to give Aryan `kubeflow-admin` permissions within the target namespace:
 
 ```yaml
