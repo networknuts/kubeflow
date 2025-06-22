@@ -1,0 +1,32 @@
+# Base: Kubeflow's code-server (VS Code) image
+FROM ghcr.io/kubeflow/kubeflow/notebook-servers/codeserver:v1.8.0
+
+# Environment
+ENV DEBIAN_FRONTEND=noninteractive \
+    NB_USER=jovyan \
+    NB_UID=1000 \
+    HOME=/home/${NB_USER}
+
+USER root
+
+# Install additional packages if needed
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-pip curl git nano htop unzip \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Optional: install Python libraries for dev
+RUN pip3 install --no-cache-dir \
+    ipywidgets jupyterlab \
+    numpy pandas matplotlib seaborn \
+    scikit-learn xgboost lightgbm \
+    kubernetes kfp tqdm joblib
+
+# Optional: VS Code extensions
+RUN code-server --install-extension ms-python.python \
+    && code-server --install-extension ms-toolsai.jupyter \
+    && code-server --install-extension ms-azuretools.vscode-docker
+
+# Set permissions and switch back to notebook user
+RUN chown -R ${NB_UID}:${NB_UID} ${HOME}
+USER ${NB_USER}
+WORKDIR ${HOME}
