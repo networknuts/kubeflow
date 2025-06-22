@@ -66,21 +66,25 @@ The Kubeflow GUI doesn’t let you supply a pull secret directly when creating n
 
 1. Creating a namespace-scoped PodDefault 
   ```yaml
-   apiVersion: kubeflow.org/v1alpha1
-   kind: PodDefault
-   metadata:
-     name: team1-env
-     namespace: kubeflow-user-example-com
-   spec:
-     desc: Inject Team 1’s environment variables
-     selector:
-       matchLabels:
-         pod-default-team1: "true"
-     env:
-       - name: MINIO_ACCESS_KEY
-         value: "minio"
-       - name: MINIO_SECRET_KEY
-         value: "minio123"
+ apiVersion: kubeflow.org/v1alpha1
+ kind: PodDefault
+ metadata:
+   name: prod-env-vars
+   namespace: kubeflow-user-example-com
+ spec:
+   desc: Production Environment Variables
+   selector:
+     matchLabels:
+       pod-default-team1: "true"
+   env:
+     - name: MINIO_ACCESS_KEY
+       value: "minio"
+     - name: MINIO_SECRET_KEY
+       value: "minio123"
+     - name: AWS_ACCESS_KEY_ID
+       value: "ABCD123"
+     - name: AWS_SECRET_KEY_ID
+       value: "XYZ4567"
   ```
 2. Testing the environment variables
    ```python
