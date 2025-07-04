@@ -1,0 +1,81 @@
+from kfp.v2.dsl import component, pipeline
+import os
+
+COMMON_IMAGE = "python:3.9-slim"
+
+@component(
+    base_image=COMMON_IMAGE,
+    packages_to_install=["prometheus_client"]
+)
+def push_metric_op(
+    username: str,
+    pushgateway_address: str = "pushgateway.kubeflow.svc.cluster.local:9091"
+):
+    """
+    Generates a fake metric and pushes it to Prometheus PushGateway.
+
+    Args:
+        username: used to label the PushGateway job
+        pushgateway_address: host:port of your PushGateway service
+    """
+    from prometheus_client import CollectorRegistry, Gauge, push_to_gateway
+
+    # 1. Create a registry and a gauge
+    registry = CollectorRegistry()
+    gauge = Gauge(
+        name="pipeline_example_metric",
+        documentation="An example metric from KFP",
+        registry=registry
+    )
+
+    # 2. Set a dummy value (for example, 123.4)
+    value = 123.4
+    gauge.set(value)
+
+    # 3. Push to PushGateway under job "pipeline_job_<username>"
+    job_name = f"pipeline_job_{username}"
+    push_to_gateway(pushgateway_address, job=job_name, registry=registry)
+
+    print(f"Pushed metric {value} to {pushgateway_address} as job '{job_name}'")
+
+@pipeline(
+    name="pushgateway-pipeline",
+    description="Example pipeline that pushes a metric via PushGateway"
+)
+def pushgateway_pipeline(
+    username: str,
+    pushgateway_address: str = "pushgateway.kubeflow.svc.cluster.local:9091"
+):
+    # single step: push_metric_op
+    push_metric_op(
+        username=username,
+        pushgateway_address=pushgateway_address
+    )
+
+if __name__ == "__main__":
+    import argparse
+    from kfp.v2 import compiler
+
+    parser = argparse.ArgumentParser(
+        description="Compile the PushGateway metric pipeline"
+    )
+    parser.add_argument(
+        "--username", type=str, required=True,
+        help="Name to include in the PushGateway job label"
+    )
+    parser.add_argument(
+        "--pushgateway_address", type=str,
+        default="pushgateway.kubeflow.svc.cluster.local:9091",
+        help="Address of PushGateway service (host:port)"
+    )
+    parser.add_argument(
+        "--output", type=str, default="pushgateway_pipeline.yaml",
+        help="Where to write the compiled pipeline spec"
+    )
+    args = parser.parse_args()
+
+    compiler.Compiler().compile(
+        pipeline_func=pushgateway_pipeline,
+        package_path=args.output
+    )
+    print(f"Compiled pipeline spec written to {args.output}.")
