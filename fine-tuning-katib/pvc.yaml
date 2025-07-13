@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: llm-train-pvc
+  namespace: kubeflow-user-example-com   # <-- match your Experiment’s namespace
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi            # size enough to hold your JSONL data
+  # use your cluster’s default StorageClass (or specify one here)
+  storageClassName: nfs-client
