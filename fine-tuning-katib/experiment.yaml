@@ -1,0 +1,103 @@
+apiVersion: kubeflow.org/v1beta1
+kind: Experiment
+metadata:
+  name: llm-finetune-experiment
+  namespace: kubeflow-user-example-com
+spec:
+  maxTrialCount: 8
+  parallelTrialCount: 2
+  maxFailedTrialCount: 2
+  resumePolicy: LongRunning
+
+  objective:
+    type: minimize
+    goal: 0.1
+    objectiveMetricName: eval_loss
+
+  algorithm:
+    algorithmName: bayesianoptimization
+
+  parameters:
+    - name: learning_rate
+      parameterType: double
+      feasibleSpace:
+        min: "1e-6"
+        max: "1e-3"
+    - name: per_device_train_batch_size
+      parameterType: categorical
+      feasibleSpace:
+        list: ["1", "2"]
+    - name: num_train_epochs
+      parameterType: discrete
+      feasibleSpace:
+        list: ["1", "2", "3"]
+    - name: r
+      parameterType: discrete
+      feasibleSpace:
+        list: ["4", "8"]
+    - name: lora_alpha
+      parameterType: discrete
+      feasibleSpace:
+        list: ["16", "32"]
+
+  metricsCollectorSpec:
+    collector:
+      kind: StdOut
+      stdout:
+        regex: "eval_loss: ([0-9\\.]+)"
+        source: regex
+
+  trialTemplate:
+    primaryContainerName: training-container
+    successCondition: status.conditions.#(type=="Complete")#|#(status=="True")#
+    failureCondition: status.conditions.#(type=="Failed")#|#(status=="True")#
+    trialParameters:
+      - name: learning_rate
+        reference: learning_rate
+      - name: per_device_train_batch_size
+        reference: per_device_train_batch_size
+      - name: num_train_epochs
+        reference: num_train_epochs
+      - name: r
+        reference: r
+      - name: lora_alpha
+        reference: lora_alpha
+
+    trialSpec:
+      apiVersion: batch/v1
+      kind: Job
+      spec:
+        template:
+          metadata:
+            annotations:
+              sidecar.istio.io/inject: 'false'
+          spec:
+            imagePullSecrets:
+              - name: gitlab-pull
+            containers:
+              - name: training-container
+                image: #REPLACE_WITH_YOUR_CONTAINER_IMAGE
+                command:
+                  - python3
+                  - train_llm.py
+                  - "--model_name_or_path=distilgpt2"
+                  - "--train_file=/data/train.jsonl"
+                  - "--validation_file=/data/valid.jsonl"
+                  - "--per_device_train_batch_size=${trialParameters.per_device_train_batch_size}"
+                  - "--learning_rate=${trialParameters.learning_rate}"
+                  - "--num_train_epochs=${trialParameters.num_train_epochs}"
+                  - "--r=${trialParameters.r}"
+                  - "--lora_alpha=${trialParameters.lora_alpha}"
+                  - "--output_dir=/output"
+                resources:
+                  limits:
+                    memory: "1Gi"
+                    cpu: "1"
+                volumeMounts:
+                  - name: train-data
+                    mountPath: /data
+            volumes:
+              - name: train-data
+                persistentVolumeClaim:
+                  claimName: llm-train-pvc
+            restartPolicy: Never
