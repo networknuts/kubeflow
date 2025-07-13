@@ -1,0 +1,21 @@
+# Containerfile.llm
+FROM python:3.11-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /train
+
+# Copy only the reqs first for layer caching
+COPY requirements_llm.txt /train/requirements_llm.txt
+
+# Cache pip downloads
+RUN --mount=type=cache,target=/root/.cache \
+    pip install --upgrade pip && \
+    pip install -r requirements_llm.txt
+
+# Copy training script
+COPY train_llm.py /train/train_llm.py
+
+# (Optional) If you bundle data in the image:
+# COPY data/ /train/data/
