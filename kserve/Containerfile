@@ -1,0 +1,11 @@
+# Containerfile
+FROM kserve/sklearnserver:latest
+
+# Create the default model repository and put your artifact under a versioned folder
+COPY model.joblib /mnt/models/1/model.joblib
+
+# (Optional) expose the REST port that the server listens on
+EXPOSE 8080
+
+ENTRYPOINT ["python", "-m", "sklearnserver"]
+CMD ["--model_dir", "/mnt/models"]
