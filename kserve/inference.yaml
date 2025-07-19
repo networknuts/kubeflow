@@ -1,0 +1,11 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: iriskserve
+  namespace: kubeflow-user-example-com
+spec:
+  predictor:
+    containers:
+      - name: kserve‑container
+        image: registry.gitlab.com/aryansr/mykubeflow/iris-kserve:2.0
+        # model_dir is baked in as /mnt/models
