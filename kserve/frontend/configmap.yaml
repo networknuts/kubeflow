@@ -1,0 +1,7 @@
+cat configmap.yaml 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: iris-streamlit-config
+data:
+  KSERVE_URL: "http://iriskserve-predictor-00001-private.kubeflow-user-example-com:80/v1/models/1:predict"
