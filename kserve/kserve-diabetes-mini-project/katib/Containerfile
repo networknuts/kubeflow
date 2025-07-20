@@ -1,0 +1,15 @@
+# Dockerfile
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# 1) Copy requirements (we’ve added the MinIO SDK)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 2) Copy your training script
+COPY train.py .
+
+# 3) Entrypoint runs train.py with args
+ENTRYPOINT ["python", "train.py"]
+

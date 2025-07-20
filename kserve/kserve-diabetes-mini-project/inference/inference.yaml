@@ -1,0 +1,14 @@
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: "diabetes-s3-model-serving"
+  namespace: kubeflow-user-example-com
+spec:
+  predictor:
+    serviceAccountName: aws-s3-sa
+    model:
+      modelFormat:
+        name: sklearn
+      protocolVersion: v2
+      runtime: kserve-sklearnserver
+      storageUri: "s3://diabetes/1.0"

@@ -1,0 +1,95 @@
+apiVersion: kubeflow.org/v1beta1
+kind: Experiment
+metadata:
+  name: diabetes-logreg-minio
+  namespace: kubeflow-user-example-com
+spec:
+  maxTrialCount: 25
+  parallelTrialCount: 5
+  maxFailedTrialCount: 3
+  resumePolicy: LongRunning
+
+  objective:
+    type: maximize
+    goal: 0.99
+    objectiveMetricName: accuracy
+    additionalMetricNames: []
+
+  algorithm:
+    algorithmName: random
+    algorithmSettings: []
+
+  parameters:
+    - name: penalty
+      parameterType: categorical
+      feasibleSpace:
+        list:
+          - "l1"
+          - "l2"
+    - name: C
+      parameterType: double
+      feasibleSpace:
+        min: "0.1"
+        max: "10.0"
+    - name: max_iter
+      parameterType: int
+      feasibleSpace:
+        min: "100"
+        max: "500"
+
+  metricsCollectorSpec:
+    collector:
+      kind: StdOut
+
+  trialTemplate:
+    primaryContainerName: training-container
+    successCondition: status.conditions.#(type=="Complete")#|#(status=="True")#
+    failureCondition: status.conditions.#(type=="Failed")#|#(status=="True")#
+    retain: false
+
+    trialParameters:
+      - name: penalty
+        reference: penalty
+      - name: C
+        reference: C
+      - name: max_iter
+        reference: max_iter
+
+    trialSpec:
+      apiVersion: batch/v1
+      kind: Job
+      spec:
+        template:
+          metadata:
+            annotations:
+              sidecar.istio.io/inject: "false"
+          spec:
+            containers:
+              - name: training-container
+                image: registry.gitlab.com/aryansr/mykubeflow/diabetes-katib:3.0
+                command:
+                  - python3
+                  - train.py
+                  # fixed MinIO connection info
+                  - "--minio-endpoint=minio-service.kubeflow:9000"
+                  - "--minio-bucket=diabetes-data"
+                  - "--minio-object=diabetes.csv"
+                  - "--minio-access-key=$(MINIO_ACCESS_KEY)"
+                  - "--minio-secret-key=$(MINIO_SECRET_KEY)"
+                  # hyperparameters
+                  - "--penalty=${trialParameters.penalty}"
+                  - "--C=${trialParameters.C}"
+                  - "--max_iter=${trialParameters.max_iter}"
+                env:
+                  - name: MINIO_ACCESS_KEY
+                    valueFrom:
+                      secretKeyRef:
+                        name: mlpipeline-minio-artifact
+                        key: accesskey
+                  - name: MINIO_SECRET_KEY
+                    valueFrom:
+                      secretKeyRef:
+                        name: mlpipeline-minio-artifact
+                        key: secretkey
+            restartPolicy: Never
+
