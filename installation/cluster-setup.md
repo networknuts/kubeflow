@@ -7,7 +7,7 @@ This project consists of a development workstation VM and a three-node Kubernete
 ```mermaid
 graph LR
   subgraph Workstation
-    WS["Workstation VM<br/>CentOS 9<br/>1 CPU, 2 GB RAM<br/>kubectl, helm, customize<br/>50 GB NFS disk"]
+    WS["Workstation VM<br/>CentOS 9<br/>1 CPU, 2 GB RAM<br/>kubectl, helm, kustomize<br/>50 GB NFS disk"]
   end
 
   subgraph Kubernetes_Cluster["Kubernetes Cluster"]
