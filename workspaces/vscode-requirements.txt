@@ -1,0 +1,21 @@
+# Jupyter client-side (optional, for notebooks inside code-server)
+jupyterlab==4.2.5
+ipywidgets==8.1.5
+jupyterlab-widgets==3.0.10
+
+# Data/ML
+numpy==2.1.1
+pandas==2.2.2
+matplotlib==3.9.2
+seaborn==0.13.2
+scikit-learn==1.5.2
+xgboost==2.1.1
+lightgbm==4.3.0
+
+# Kubeflow/K8s
+kubernetes==30.1.0
+kfp==2.7.0
+
+# Utils
+tqdm==4.66.5
+joblib==1.4.2
