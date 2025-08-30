@@ -1,0 +1,47 @@
+# Base: Kubeflow's code-server (VS Code) image
+FROM ghcr.io/kubeflow/kubeflow/notebook-servers/codeserver:v1.8.0
+
+# ---- 0) Environment & path ---------------------------------------------------
+ENV DEBIAN_FRONTEND=noninteractive \
+    NB_USER=jovyan \
+    NB_UID=1000 \
+    HOME=/home/${NB_USER} \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PIP_NO_CACHE_DIR=1 \
+    VENV_PATH=/opt/venv
+
+USER root
+
+# ---- 1) System packages (lean) ----------------------------------------------
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      python3 python3-venv python3-pip \
+      curl git nano htop unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# ---- 2) Python deps via requirements.txt (cache-friendly) -------------------
+# Copy only requirements first to maximize layer caching
+COPY --chown=${NB_UID}:${NB_UID} requirements.txt /tmp/requirements.txt
+
+# Create venv + install deps
+RUN python3 -m venv "${VENV_PATH}" && \
+    "${VENV_PATH}/bin/python" -m pip install --upgrade pip && \
+    "${VENV_PATH}/bin/pip" install -r /tmp/requirements.txt
+
+# Ensure the venv is used by default for both root and ${NB_USER}
+ENV PATH="${VENV_PATH}/bin:${PATH}"
+
+# ---- 3) VS Code extensions via extensions.txt (cache-friendly) --------------
+# Copy extension list separately for caching
+COPY --chown=${NB_UID}:${NB_UID} extensions.txt /tmp/extensions.txt
+
+# Install extensions (one per line in extensions.txt)
+# code-server is already in PATH in the base image
+RUN xargs -a /tmp/extensions.txt -r -n1 code-server --install-extension
+
+# ---- 4) Permissions & default user ------------------------------------------
+RUN chown -R ${NB_UID}:${NB_UID} ${HOME}
+USER ${NB_USER}
+WORKDIR ${HOME}
+
+# ---- 5) Startup (code-server’s base image already sets entrypoint) ----------
+# No CMD needed unless you want to customize code-server flags.
