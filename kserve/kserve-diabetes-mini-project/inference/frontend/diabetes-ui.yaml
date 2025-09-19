@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: diabetes-ui
+  namespace: kubeflow-user-example-com
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: diabetes-ui
+  template:
+    metadata:
+      labels:
+        app: diabetes-ui
+    spec:
+      containers:
+        - name: ui
+          image: registry.gitlab.com/aryansr/mykubeflow/diabetes-frontend-db:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8501
+          envFrom:
+            - configMapRef:
+                name: diabetes-ui-config
+          # If your inference endpoint is HTTPS with self-signed certs and you want to skip verification:
+          # env:
+          #   - name: VERIFY_TLS
+          #     value: "false"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: diabetes-ui
+  namespace: kubeflow-user-example-com
+spec:
+  selector:
+    app: diabetes-ui
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8501
+      protocol: TCP
