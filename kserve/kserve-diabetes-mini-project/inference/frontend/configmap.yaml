@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: diabetes-ui-config
+  namespace: kubeflow-user-example-com
+data:
+  INFERENCE_URL: "http://diabetes-s3-model-serving-predictor-00001-private:80/v2/models/diabetes-s3-model-serving/infer"
+  INPUT_NAME: "predict"
+  INPUT_DATATYPE: "FP32"
+  TIMEOUT_SECONDS: "15"
+  VERIFY_TLS: "false"
+  # Cache
+  CACHE_ENABLED: "true"
+  CACHE_TTL_SECONDS: "86400"   # 24h; set "0" to never expire
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  REDIS_DB: "0"
+  CACHE_SECRET: "networknuts"
