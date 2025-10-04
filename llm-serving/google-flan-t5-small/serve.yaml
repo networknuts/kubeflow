@@ -1,0 +1,32 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: flan-t5-small-cpu
+  namespace: kubeflow-user-example-com
+spec:
+  predictor:
+    model:
+      modelFormat:
+        name: huggingface
+      storageUri: hf://google/flan-t5-small
+      resources:
+        requests:
+          cpu: "1"
+          memory: "1Gi"
+        limits:
+          cpu: "1"
+          memory: "1Gi"
+      args:
+        - "--backend=huggingface"
+        - "--task=text2text_generation"  
+        - "--dtype=float32"
+        - "--max_model_len=128"           # keep tight for 1GiB; raise if you have headroom
+      env:
+        - name: TRANSFORMERS_OFFLINE
+          value: "false"
+        - name: KSERVE_OPENAI_ROUTE_PREFIX
+          value: "openai"
+        - name: OMP_NUM_THREADS
+          value: "1"
+        - name: TOKENIZERS_PARALLELISM
+          value: "false"
