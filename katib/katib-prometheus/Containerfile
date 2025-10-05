@@ -1,0 +1,10 @@
+# /Dockerfile
+FROM python:3.10-slim
+
+WORKDIR /app
+COPY train_iris.py /app/train_iris.py
+
+# minimal deps
+RUN pip install --no-cache-dir scikit-learn==1.4.2 prometheus_client==0.20.0 numpy==1.26.4
+
+ENTRYPOINT ["python", "/app/train_iris.py"]
