@@ -1,0 +1,69 @@
+apiVersion: kubeflow.org/v1beta1
+kind: Experiment
+metadata:
+  name: iris-svc-pg
+  namespace: kubeflow-user-example-com
+spec:
+  objective:
+    type: maximize
+    goal: 0.98
+    objectiveMetricName: accuracy
+    additionalMetricNames:
+      - precision
+      - recall
+  algorithm:
+    algorithmName: random
+  parameters:
+    - name: C
+      parameterType: double
+      feasibleSpace:
+        min: "1e-3"
+        max: "1e+3"
+    - name: gamma
+      parameterType: double
+      feasibleSpace:
+        min: "1e-4"
+        max: "1e+0"
+  trialTemplate:
+    primaryContainerName: training-container
+    trialParameters:
+      - name: C
+        description: SVC C
+        reference: C
+      - name: gamma
+        description: SVC gamma
+        reference: gamma
+    trialSpec:
+      apiVersion: batch/v1
+      kind: Job
+      spec:
+        template:
+          metadata:
+            annotations:
+              sidecar.istio.io/inject: "false"
+            labels:
+              app: iris-svc-katib
+          spec:
+            restartPolicy: Never
+            imagePullSecrets:
+              - name: regcred
+            containers:
+              - name: training-container
+                image: registry.gitlab.com/aryansr/mykubeflow/katib-prom:1.0
+                imagePullPolicy: IfNotPresent
+                args:
+                  - "--C"
+                  - "${trialParameters.C}"
+                  - "--gamma"
+                  - "${trialParameters.gamma}"
+                  - "--pushgateway"
+                  - "$(PUSHGATEWAY_ADDR)"
+                env:
+                  - name: PUSHGATEWAY_ADDR
+                    value: "pushgateway.monitoring.svc.cluster.local:9091"
+  maxTrialCount: 12
+  parallelTrialCount: 3
+  maxFailedTrialCount: 3
+  metricsCollectorSpec:
+    collector:
+      kind: StdOut
