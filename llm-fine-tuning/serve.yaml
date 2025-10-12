@@ -1,0 +1,22 @@
+apiVersion: serving.kserve.io/v1beta1
+kind: InferenceService
+metadata:
+  name: tiny-sft
+  namespace: kubeflow-user-example-com
+spec:
+  predictor:
+    serviceAccountName: kserve-minio-sa
+    model:
+      modelFormat:
+        name: huggingface
+      storageUri: "s3://custom-llm/models/tiny-sft-merged"
+      env:
+        - name: TRANSFORMERS_OFFLINE
+          value: "false"
+        - name: HF_TASK
+          value: "text-generation"
+        - name: USE_VLLM
+          value: "false"       # 👈 disable vLLM entirely
+      args:
+        - "--backend=huggingface"
+        - "--task=text_generation"
