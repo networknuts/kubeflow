@@ -1,0 +1,15 @@
+FROM python:3.10-slim
+
+# (Optional) system build tools if you need them later
+# RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
+
+RUN python -m pip install --no-cache-dir \
+    transformers==4.43.3 \
+    datasets>=2.19.0 \
+    accelerate \
+    peft>=0.11.0 \
+    torch \
+    s3fs \
+    boto3 \
+    huggingface_hub \
+    kserve==0.13.0
